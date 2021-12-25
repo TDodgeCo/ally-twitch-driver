@@ -1,5 +1,5 @@
 {
-  "name": "ally-twitch-driver",
+  "name": "adonis-ally-twitch",
   "version": "1.0.0",
   "description": "A custom ally driver for twitch",
   "main": "build/providers/index.js",
@@ -47,12 +47,12 @@
   "adonisjs": {
     "instructionsMd": "./build/instructions.md",
     "env": {
-      "TWITCH_DRIVER_CLIENT_ID": "",
-      "TWITCH_DRIVER_CLIENT_SECRET": ""
+      "TWITCH_CLIENT_ID": "",
+      "TWITCH_CLIENT_SECRET": ""
     },
-    "types": "ally-twitch-driver",
+    "types": "adonis-ally-twitch",
     "providers": [
-      "ally-twitch-driver"
+      "adonis-ally-twitch"
     ]
   }
 }
