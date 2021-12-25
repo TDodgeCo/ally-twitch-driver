@@ -199,7 +199,7 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
    * means "ACCESS DENIED".
    */
   public accessDenied() {
-    return this.ctx.request.input('error') === 'user_denied'
+    return this.ctx.request.input('error') === 'Unauthorized'
   }
 
   private getAuthenticatedRequest(url: string, token: string) {

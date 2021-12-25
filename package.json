@@ -1,6 +1,6 @@
 {
   "name": "adonis-ally-twitch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A custom ally driver for twitch",
   "main": "build/providers/index.js",
   "files": [
