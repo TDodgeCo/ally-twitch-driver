@@ -1,7 +1,7 @@
 {
-  "name": "ally-custom-driver",
-  "version": "0.0.0",
-  "description": "A boilerplate for a custom ally driver",
+  "name": "ally-twitch-driver",
+  "version": "1.0.0",
+  "description": "A custom ally driver for twitch",
   "main": "build/providers/index.js",
   "files": [
     "build/src",
@@ -22,7 +22,8 @@
   },
   "keywords": [
     "adonisjs",
-    "adonis-ally"
+    "adonis-ally",
+    "adonis-ally-twitch"
   ],
   "author": "",
   "license": "MIT",
@@ -30,6 +31,7 @@
     "@adonisjs/ally": "^4.0.0",
     "@adonisjs/core": "^5.1.8",
     "@types/node": "^15.12.2",
+    "copyfiles": "^2.4.1",
     "del-cli": "^3.0.1",
     "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
@@ -45,12 +47,12 @@
   "adonisjs": {
     "instructionsMd": "./build/instructions.md",
     "env": {
-      "YOUR_DRIVER_CLIENT_ID": "",
-      "YOUR_DRIVER_CLIENT_SECRET": ""
+      "TWITCH_DRIVER_CLIENT_ID": "",
+      "TWITCH_DRIVER_CLIENT_SECRET": ""
     },
-    "types": "ally-custom-driver",
+    "types": "ally-twitch-driver",
     "providers": [
-      "ally-custom-driver"
+      "ally-twitch-driver"
     ]
   }
 }

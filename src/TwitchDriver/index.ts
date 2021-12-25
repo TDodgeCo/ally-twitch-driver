@@ -12,7 +12,7 @@
 
 import type { AllyUserContract } from '@ioc:Adonis/Addons/Ally'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { Oauth2Driver, ApiRequest } from '@adonisjs/ally/build/standalone'
+import { Oauth2Driver, ApiRequest, RedirectRequest } from '@adonisjs/ally/build/standalone'
 
 /**
  * Define the access token object properties in this type. It
@@ -20,10 +20,10 @@ import { Oauth2Driver, ApiRequest } from '@adonisjs/ally/build/standalone'
  * more properties.
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "TwitchDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverAccessToken = {
+export type TwitchDriverAccessToken = {
   token: string
   type: 'bearer'
 }
@@ -33,58 +33,91 @@ export type YourDriverAccessToken = {
  * https://github.com/adonisjs/ally/blob/develop/adonis-typings/ally.ts#L236-L268
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "TwitchDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverScopes = string
+export type TwitchDriverScopes =
+  | 'analytics:read:extensions'
+  | 'analytics:read:games'
+  | 'bits:read'
+  | 'channel:edit:commercial'
+  | 'channel:manage:broadcast'
+  | 'channel:manage:extensions'
+  | 'channel:manage:polls'
+  | 'channel:manage:predictions'
+  | 'channel:manage:redemptions'
+  | 'channel:manage:schedule'
+  | 'channel:manage:videos'
+  | 'channel:read:editors'
+  | 'channel:read:goals'
+  | 'channel:read:hype_train'
+  | 'channel:read:polls'
+  | 'channel:read:predictions'
+  | 'channel:read:redemptions'
+  | 'channel:read:stream_key'
+  | 'channel:read:subscriptions'
+  | 'clips:edit'
+  | 'moderation:read'
+  | 'moderator:manage:automod'
+  | 'user:edit'
+  | 'user:edit:follows'
+  | 'user:manage:blocked_users'
+  | 'user:read:blocked_users'
+  | 'user:read:broadcast'
+  | 'user:read:email'
+  | 'user:read:follows'
+  | 'user:read:subscriptions'
+
+export type LiteralStringUnion<LiteralType> = LiteralType | (string & { _?: never })
 
 /**
  * Define the configuration options accepted by your driver. It must have the following
  * properties and you are free add more.
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "TwitchDriver" to something more relevant
  * ------------------------------------------------
  */
-export type YourDriverConfig = {
-  driver: 'YourDriverName'
+export type TwitchDriverConfig = {
+  driver: 'TwitchDriver'
   clientId: string
   clientSecret: string
   callbackUrl: string
   authorizeUrl?: string
   accessTokenUrl?: string
   userInfoUrl?: string
+  scopes?: LiteralStringUnion<TwitchDriverScopes>[]
 }
 
 /**
  * Driver implementation. It is mostly configuration driven except the user calls
  *
  * ------------------------------------------------
- * Change "YourDriver" to something more relevant
+ * Change "TwitchDriver" to something more relevant
  * ------------------------------------------------
  */
-export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverScopes> {
+export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDriverScopes> {
   /**
    * The URL for the redirect request. The user will be redirected on this page
    * to authorize the request.
    *
    * Do not define query strings in this URL.
    */
-  protected authorizeUrl = ''
+  protected authorizeUrl = 'https://id.twitch.tv/oauth2/authorize'
 
   /**
    * The URL to hit to exchange the authorization code for the access token
    *
    * Do not define query strings in this URL.
    */
-  protected accessTokenUrl = ''
+  protected accessTokenUrl = 'https://id.twitch.tv/oauth2/token'
 
   /**
    * The URL to hit to get the user details
    *
    * Do not define query strings in this URL.
    */
-  protected userInfoUrl = ''
+  protected userInfoUrl = 'https://api.twitch.tv/helix/users'
 
   /**
    * The param name for the authorization code. Read the documentation of your oauth
@@ -105,7 +138,7 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    * approach is to prefix the oauth provider name to `oauth_state` value. For example:
    * For example: "facebook_oauth_state"
    */
-  protected stateCookieName = 'YourDriver_oauth_state'
+  protected stateCookieName = 'TwitchDriver_oauth_state'
 
   /**
    * Parameter name to be used for sending and receiving the state from.
@@ -125,7 +158,7 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    */
   protected scopesSeparator = ' '
 
-  constructor(ctx: HttpContextContract, public config: YourDriverConfig) {
+  constructor(ctx: HttpContextContract, public config: TwitchDriverConfig) {
     super(ctx, config)
 
     /**
@@ -142,7 +175,17 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    * is made by the base implementation of "Oauth2" driver and this is a
    * hook to pre-configure the request.
    */
-  // protected configureRedirectRequest(request: RedirectRequest<YourDriverScopes>) {}
+  //  protected configureRedirectRequest(request: RedirectRequest<TwitchDriverScopes>) {}
+
+  protected configureRedirectRequest(request: RedirectRequest<TwitchDriverScopes>) {
+    /**
+     * Define user defined scopes or the default one's
+     */
+    request.scopes(this.config.scopes || ['user:read:email'])
+
+    request.param('response_type', 'code')
+    request.param('grant_type', 'authorization_code')
+  }
 
   /**
    * Optionally configure the access token request. The actual request is made by
@@ -159,6 +202,35 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
     return this.ctx.request.input('error') === 'user_denied'
   }
 
+  private getAuthenticatedRequest(url: string, token: string) {
+    const request = this.httpClient(url)
+    request.header('Authorization', `Bearer ${token}`)
+    request.header('Client-id', this.config.clientId)
+    request.header('Accept', 'application/json')
+    request.parseAs('json')
+    return request
+  }
+
+  public async getUserInfo(token: string, callback?: (request: ApiRequest) => void) {
+    const request = this.getAuthenticatedRequest(this.userInfoUrl, token)
+    if (typeof callback === 'function') {
+      callback(request)
+    }
+
+    const body = await request.get()
+    const [{ id, login, display_name: displayName, email, profile_image_url: profileImageUrl }] =
+      body.data
+    return {
+      id: id,
+      name: login,
+      nickName: displayName,
+      email: email,
+      avatarUrl: profileImageUrl || null,
+      emailVerificationState: 'unsupported' as const,
+      original: body.data[0],
+    }
+  }
+
   /**
    * Get the user details by query the provider API. This method must return
    * the access token and the user details both. Checkout the google
@@ -168,7 +240,7 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
    */
   public async user(
     callback?: (request: ApiRequest) => void
-  ): Promise<AllyUserContract<YourDriverAccessToken>> {
+  ): Promise<AllyUserContract<TwitchDriverAccessToken>> {
     const accessToken = await this.accessToken()
     const request = this.httpClient(this.config.userInfoUrl || this.userInfoUrl)
 
@@ -183,6 +255,12 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
     /**
      * Write your implementation details here
      */
+    const user = await this.getUserInfo(accessToken.token, callback)
+
+    return {
+      ...user,
+      token: accessToken,
+    }
   }
 
   public async userFromToken(
@@ -199,8 +277,13 @@ export class YourDriver extends Oauth2Driver<YourDriverAccessToken, YourDriverSc
       callback(request)
     }
 
-    /**
-     * Write your implementation details here
-     */
+    const user = await this.getUserInfo(accessToken)
+    return {
+      ...user,
+      token: {
+        token: accessToken,
+        type: 'bearer' as const,
+      },
+    }
   }
 }
