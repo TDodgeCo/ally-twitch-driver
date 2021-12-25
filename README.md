@@ -49,7 +49,7 @@ const allyConfig: AllyConfig = {
 
 ## Scopes
 
-You can pass an stirng of scopes in your configuration, for example `['user:read:email', 'user:read:follows']`. You have a full list of scopes in the [Twitch Oauth documentation](https://dev.twitch.tv/docs/authentication#scopes)
+You can pass an string of scopes in your configuration, for example `['user:read:email', 'user:read:follows']`. You have a full list of scopes in the [Twitch Oauth documentation](https://dev.twitch.tv/docs/authentication#scopes)
 
 ## How it works
 
