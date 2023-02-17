@@ -42,7 +42,7 @@ const allyConfig: AllyConfig = {
     driver: 'TwitchDriver',
     clientId: Env.get('TWITCH_CLIENT_ID'),
     clientSecret: Env.get('TWITCH_CLIENT_SECRET'),
-    callbackUrl: 'http://localhost:3333/twitch/callback',
+    callbackUrl: Env.get('TWITCH_CALLBACK_URL'),
   },
 }
 ```
