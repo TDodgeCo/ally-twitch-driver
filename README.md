@@ -31,6 +31,7 @@ node ace configure adonis-ally-twitch
 ```ts
 TWITCH_CLIENT_ID: Env.schema.string(),
 TWITCH_CLIENT_SECRET: Env.schema.string(),
+TWITCH_CALLBACK_URL: Env.schema.string(),
 ```
 
 ### 4. Add variables to your ally configuration
