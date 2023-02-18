@@ -79,7 +79,7 @@ export type LiteralStringUnion<LiteralType> = LiteralType | (string & { _?: neve
  * ------------------------------------------------
  */
 export type TwitchDriverConfig = {
-  driver: 'TwitchDriver'
+  driver: 'twitch'
   clientId: string
   clientSecret: string
   callbackUrl: string
@@ -216,6 +216,11 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
     return request
   }
 
+  /**
+   * See https://docs.adonisjs.com/guides/auth/social for more information
+   * on the return type of user with social auth
+   */
+
   protected async getUserInfo(token: string, callback?: (request: ApiRequestContract) => void) {
     const request = this.getAuthenticatedRequest(this.userInfoUrl, token)
     if (typeof callback === 'function') {
@@ -224,13 +229,16 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
 
     const body = await request.get()
     const data = body.data[0]
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Twitch API returns snake_case
+    const { id, login, display_name, email, profile_image_url } = data
+
     return {
-      id: data.id,
-      nickName: data.login,
-      name: data.display_name,
-      email: data.email,
-      avatarUrl: data.profile_image_url,
+      id,
+      nickName: login,
+      name: display_name,
+      email,
       emailVerificationState: 'unsupported' as const,
+      avatarUrl: profile_image_url,
       original: data,
     }
   }

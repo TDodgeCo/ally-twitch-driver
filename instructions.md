@@ -8,7 +8,7 @@ import { TwitchDriver, TwitchDriverConfig } from 'adonis-ally-twitch/build/src/T
 declare module '@ioc:Adonis/Addons/Ally' {
   interface SocialProviders {
     // ... other mappings
-    twitchDriver: {
+    twitch: {
       config: TwitchDriverConfig
       implementation: TwitchDriver
     }

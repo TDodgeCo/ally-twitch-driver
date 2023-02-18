@@ -39,8 +39,8 @@ TWITCH_CALLBACK_URL: Env.schema.string(),
 ```ts
 const allyConfig: AllyConfig = {
   // ... other drivers
-  twitchDriver: {
-    driver: 'TwitchDriver',
+  twitch: {
+    driver: 'twitch',
     clientId: Env.get('TWITCH_CLIENT_ID'),
     clientSecret: Env.get('TWITCH_CLIENT_SECRET'),
     callbackUrl: Env.get('TWITCH_CALLBACK_URL'),
