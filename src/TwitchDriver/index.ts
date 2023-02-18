@@ -26,6 +26,10 @@ import { ApiRequestContract } from '@ioc:Adonis/Addons/Ally'
 export type TwitchDriverAccessToken = {
   token: string
   type: 'bearer'
+  refreshToken: string
+  expiresIn: number
+  expiresAt: any
+  scope: string[]
 }
 
 /**
@@ -233,10 +237,10 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
     const { id, login, display_name, email, profile_image_url } = data
 
     return {
-      id,
+      id: id,
       nickName: login,
       name: display_name,
-      email,
+      email: email,
       emailVerificationState: 'unsupported' as const,
       avatarUrl: profile_image_url,
       original: data,
