@@ -12,7 +12,7 @@
 
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { Oauth2Driver, RedirectRequest } from '@adonisjs/ally/build/standalone'
-import { ApiRequestContract } from '@poppinss/oauth-client'
+import { ApiRequestContract } from '@ioc:Adonis/Addons/Ally'
 
 /**
  * Define the access token object properties in this type. It
