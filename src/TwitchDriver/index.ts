@@ -10,9 +10,9 @@
 |
 */
 
-import type { AllyUserContract } from '@ioc:Adonis/Addons/Ally'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { Oauth2Driver, ApiRequest, RedirectRequest } from '@adonisjs/ally/build/standalone'
+import { Oauth2Driver, RedirectRequest } from '@adonisjs/ally/build/standalone'
+import { ApiRequestContract } from '@ioc:Adonis/Addons/Ally'
 
 /**
  * Define the access token object properties in this type. It
@@ -26,6 +26,10 @@ import { Oauth2Driver, ApiRequest, RedirectRequest } from '@adonisjs/ally/build/
 export type TwitchDriverAccessToken = {
   token: string
   type: 'bearer'
+  refreshToken: string
+  expiresIn: number
+  expiresAt: any
+  scope: string[]
 }
 
 /**
@@ -79,7 +83,7 @@ export type LiteralStringUnion<LiteralType> = LiteralType | (string & { _?: neve
  * ------------------------------------------------
  */
 export type TwitchDriverConfig = {
-  driver: 'TwitchDriver'
+  driver: 'twitch'
   clientId: string
   clientSecret: string
   callbackUrl: string
@@ -198,11 +202,16 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
    * Update the implementation to tell if the error received during redirect
    * means "ACCESS DENIED".
    */
-  public accessDenied() {
-    return this.ctx.request.input('error') === 'Unauthorized'
+  public accessDenied(): boolean {
+    const error = this.getError()
+    if (!error) {
+      return false
+    }
+
+    return error === 'access_denied'
   }
 
-  private getAuthenticatedRequest(url: string, token: string) {
+  protected getAuthenticatedRequest(url: string, token: string) {
     const request = this.httpClient(url)
     request.header('Authorization', `Bearer ${token}`)
     request.header('Client-id', this.config.clientId)
@@ -211,79 +220,59 @@ export class TwitchDriver extends Oauth2Driver<TwitchDriverAccessToken, TwitchDr
     return request
   }
 
-  public async getUserInfo(token: string, callback?: (request: ApiRequest) => void) {
+  /**
+   * See https://docs.adonisjs.com/guides/auth/social for more information
+   * on the return type of user with social auth
+   */
+
+  protected async getUserInfo(token: string, callback?: (request: ApiRequestContract) => void) {
     const request = this.getAuthenticatedRequest(this.userInfoUrl, token)
     if (typeof callback === 'function') {
       callback(request)
     }
 
     const body = await request.get()
-    const [{ id, login, display_name: displayName, email, profile_image_url: profileImageUrl }] =
-      body.data
+    const data = body.data[0]
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Twitch API returns snake_case
+    const { id, login, display_name, email, profile_image_url } = data
+
     return {
       id: id,
-      name: login,
-      nickName: displayName,
+      nickName: login,
+      name: display_name,
       email: email,
-      avatarUrl: profileImageUrl || null,
       emailVerificationState: 'unsupported' as const,
-      original: body.data[0],
+      avatarUrl: profile_image_url,
+      original: data,
     }
   }
 
   /**
    * Get the user details by query the provider API. This method must return
-   * the access token and the user details both. Checkout the google
-   * implementation for same.
+   * the access token and the user details both. Checkout the spotify
+   * implementation for reference
    *
-   * https://github.com/adonisjs/ally/blob/develop/src/Drivers/Google/index.ts#L191-L199
+   * https://github.com/adonisjs/ally/blob/master/src/Drivers/Spotify/index.ts
    */
-  public async user(
-    callback?: (request: ApiRequest) => void
-  ): Promise<AllyUserContract<TwitchDriverAccessToken>> {
-    const accessToken = await this.accessToken()
-    const request = this.httpClient(this.config.userInfoUrl || this.userInfoUrl)
-
-    /**
-     * Allow end user to configure the request. This should be called after your custom
-     * configuration, so that the user can override them (if required)
-     */
-    if (typeof callback === 'function') {
-      callback(request)
-    }
-
-    /**
-     * Write your implementation details here
-     */
-    const user = await this.getUserInfo(accessToken.token, callback)
+  public async user(callback?: (request: ApiRequestContract) => void) {
+    const token = await this.accessToken(callback)
+    const user = await this.getUserInfo(token.token, callback)
 
     return {
       ...user,
-      token: accessToken,
+      token: token,
     }
   }
 
-  public async userFromToken(
-    accessToken: string,
-    callback?: (request: ApiRequest) => void
-  ): Promise<AllyUserContract<{ token: string; type: 'bearer' }>> {
-    const request = this.httpClient(this.config.userInfoUrl || this.userInfoUrl)
+  /**
+   * Finds the user by the access token
+   */
+  public async userFromToken(token: string, callback?: (request: ApiRequestContract) => void) {
+    const user = await this.getUserInfo(token, callback)
 
-    /**
-     * Allow end user to configure the request. This should be called after your custom
-     * configuration, so that the user can override them (if required)
-     */
-    if (typeof callback === 'function') {
-      callback(request)
-    }
-
-    const user = await this.getUserInfo(accessToken)
     return {
       ...user,
-      token: {
-        token: accessToken,
-        type: 'bearer' as const,
-      },
+      token: { token, type: 'bearer' as const },
     }
   }
 }

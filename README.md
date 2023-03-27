@@ -31,6 +31,7 @@ node ace configure adonis-ally-twitch
 ```ts
 TWITCH_CLIENT_ID: Env.schema.string(),
 TWITCH_CLIENT_SECRET: Env.schema.string(),
+TWITCH_CALLBACK_URL: Env.schema.string(),
 ```
 
 ### 4. Add variables to your ally configuration
@@ -38,11 +39,11 @@ TWITCH_CLIENT_SECRET: Env.schema.string(),
 ```ts
 const allyConfig: AllyConfig = {
   // ... other drivers
-  twitchDriver: {
-    driver: 'TwitchDriver',
+  twitch: {
+    driver: 'twitch',
     clientId: Env.get('TWITCH_CLIENT_ID'),
     clientSecret: Env.get('TWITCH_CLIENT_SECRET'),
-    callbackUrl: 'http://localhost:3333/twitch/callback',
+    callbackUrl: Env.get('TWITCH_CALLBACK_URL'),
   },
 }
 ```

@@ -7,7 +7,7 @@ export default class TwitchDriverProvider {
     const Ally = this.app.container.resolveBinding('Adonis/Addons/Ally')
     const { TwitchDriver } = await import('../src/TwitchDriver')
 
-    Ally.extend('TwitchDriver', (_, __, config, ctx) => {
+    Ally.extend('twitch', (_, __, config, ctx) => {
       return new TwitchDriver(ctx, config)
     })
   }
