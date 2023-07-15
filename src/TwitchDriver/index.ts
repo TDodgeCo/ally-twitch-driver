@@ -41,11 +41,11 @@ export type TwitchDriverAccessToken = {
  * ------------------------------------------------
  */
 export type TwitchDriverScopes =
-  | 'whispers:read'
   | 'chat:read'
   | 'user:read:subscriptions'
   | 'user:read:follows'
   | 'user:read:email'
+  | 'user:read:broadcast'
   | 'moderator:read:shoutouts'
   | 'moderator:read:shield_mode'
   | 'moderator:read:guest_star'
@@ -54,6 +54,7 @@ export type TwitchDriverScopes =
   | 'moderator:read:chat_settings'
   | 'moderator:read:blocked_terms'
   | 'moderation:read channel:read:vips'
+  | 'channel:moderate'
   | 'channel:read:subscriptions'
   | 'channel:read:redemptions'
   | 'channel:read:predictions'

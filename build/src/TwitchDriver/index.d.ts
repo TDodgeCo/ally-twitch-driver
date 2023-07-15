@@ -28,7 +28,7 @@ export declare type TwitchDriverAccessToken = {
  * Change "TwitchDriver" to something more relevant
  * ------------------------------------------------
  */
-export declare type TwitchDriverScopes = 'whispers:read' | 'chat:read' | 'user:read:subscriptions' | 'user:read:follows' | 'user:read:email' | 'moderator:read:shoutouts' | 'moderator:read:shield_mode' | 'moderator:read:guest_star' | 'moderator:read:followers' | 'moderator:read:chatters' | 'moderator:read:chat_settings' | 'moderator:read:blocked_terms' | 'moderation:read channel:read:vips' | 'channel:read:subscriptions' | 'channel:read:redemptions' | 'channel:read:predictions' | 'bits:read' | 'channel:read:charity' | 'channel:read:goals' | 'channel:read:guest_star' | 'channel:read:hype_train' | 'channel:read:polls';
+export declare type TwitchDriverScopes = 'chat:read' | 'user:read:subscriptions' | 'user:read:follows' | 'user:read:email' | 'user:read:broadcast' | 'moderator:read:shoutouts' | 'moderator:read:shield_mode' | 'moderator:read:guest_star' | 'moderator:read:followers' | 'moderator:read:chatters' | 'moderator:read:chat_settings' | 'moderator:read:blocked_terms' | 'moderation:read channel:read:vips' | 'channel:moderate' | 'channel:read:subscriptions' | 'channel:read:redemptions' | 'channel:read:predictions' | 'bits:read' | 'channel:read:charity' | 'channel:read:goals' | 'channel:read:guest_star' | 'channel:read:hype_train' | 'channel:read:polls';
 export declare type LiteralStringUnion<LiteralType> = LiteralType | (string & {
     _?: never;
 });
